@@ -100,8 +100,8 @@ def get_uptime():
     hours = seconds / 3600
     days = seconds / 86400
     if days >= 1:
-        return f"{days:.1f} Tage"
-    return f"{hours:.1f} Stunden"
+        return f"{days:.1f} days"
+    return f"{hours:.1f} hours"
 
 
 def assess_risk(blockchain, network, mempool):
@@ -109,29 +109,29 @@ def assess_risk(blockchain, network, mempool):
     risk_level = "LOW"
 
     if blockchain["sync_progress"] < 99.9:
-        risks.append(f"Node nicht vollständig synchronisiert ({blockchain['sync_progress']}%)")
+        risks.append(f"Node not fully synced ({blockchain['sync_progress']}%)")
         risk_level = "CRITICAL"
 
     if network["connections_total"] < 3:
-        risks.append(f"Sehr wenige Peers ({network['connections_total']})")
+        risks.append(f"Very few peers ({network['connections_total']})")
         risk_level = "CRITICAL"
     elif network["connections_total"] < 8:
-        risks.append(f"Wenige Peers ({network['connections_total']})")
+        risks.append(f"Few Peers ({network['connections_total']})")
         if risk_level != "CRITICAL":
             risk_level = "WARN"
 
     if network["connections_in"] == 0:
-        risks.append("Keine eingehenden Verbindungen (Port 8333 offen?)")
+        risks.append("No incoming connections (port 8333 open)")
         if risk_level == "LOW":
             risk_level = "WARN"
 
     if mempool["size_mb"] > 300:
-        risks.append(f"Mempool sehr groß ({mempool['size_mb']} MB)")
+        risks.append(f"Mempool very large ({mempool['size_mb']} MB)")
         if risk_level == "LOW":
             risk_level = "WARN"
 
     if blockchain["size_on_disk_gb"] > 600:
-        risks.append(f"Blockchain belegt {blockchain['size_on_disk_gb']} GB Speicher")
+        risks.append(f"Blockchain using {blockchain['size_on_disk_gb']} GB disk space")
         if risk_level == "LOW":
             risk_level = "WARN"
 
@@ -152,25 +152,25 @@ def print_report(blockchain, network, mempool, uptime, risk_level, risks):
     print(f"   Headers:        {blockchain['headers']:,}")
     print(f"   Sync:           {blockchain['sync_progress']}%")
     print(f"   Disk:           {blockchain['size_on_disk_gb']} GB")
-    print(f"   Pruned:         {'Ja' if blockchain['pruned'] else 'Nein'}")
+    print(f"   Pruned:         {'Yes' if blockchain['pruned'] else 'No'}")
 
-    print(f"\n🌐 NETZWERK")
+    print(f"\n🌐 NETWORK")
     print(f"   Version:        {network['version']}")
     print(f"   Peers Total:    {network['connections_total']}")
     print(f"   Peers In:       {network['connections_in']}")
     print(f"   Peers Out:      {network['connections_out']}")
 
     print(f"\n📦 MEMPOOL")
-    print(f"   Transaktionen:  {mempool['tx_count']:,}")
-    print(f"   Größe:          {mempool['size_mb']} MB")
-    print(f"   RAM-Nutzung:    {mempool['memory_mb']} MB")
+    print(f"   Transactions:  {mempool['tx_count']:,}")
+    print(f"   Size:          {mempool['size_mb']} MB")
+    print(f"   RAM-Usage:     {mempool['memory_mb']} MB")
 
     if uptime:
         print(f"\n⏱️  UPTIME:         {uptime}")
 
     print(f"\n{'=' * 60}")
     if risk_level == "LOW":
-        print(f"   ✅ RISK: {risk_level} - Alles in Ordnung")
+        print(f"   ✅ RISK: {risk_level} - All good")
     elif risk_level == "WARN":
         print(f"   ⚠️  RISK: {risk_level}")
     else:
@@ -180,19 +180,19 @@ def print_report(blockchain, network, mempool, uptime, risk_level, risks):
         for r in risks:
             print(f"   → {r}")
     else:
-        print("   Keine Auffälligkeiten.")
+        print("   No issues found.")
 
     print("=" * 60)
 
 
 def main():
     if not RPC_USER or not RPC_PASS:
-        print("[ERROR] BTC_RPC_USER oder BTC_RPC_PASS nicht gesetzt.")
-        print("Erstelle eine .env Datei oder setze die Umgebungsvariable.")
-        print("Siehe README.md für Details.")
+        print("[ERROR] BTC_RPC_USER or BTC_RPC_PASS not set.")
+        print("Create a .env file or set the environment variable.")
+        print("See README.md for details.")
         sys.exit(1)
 
-    print("₿ Bitcoin Guardian startet...\n")
+    print("₿ Bitcoin Guardian starting...\n")
 
     blockchain = get_blockchain_info()
     network = get_network_info()
@@ -200,7 +200,7 @@ def main():
     uptime = get_uptime()
 
     if not all([blockchain, network, mempool]):
-        print("[ERROR] Konnte nicht alle Daten abrufen.")
+        print("[ERROR] Could not retrieve all data.")
         sys.exit(1)
 
     risk_level, risks = assess_risk(blockchain, network, mempool)
