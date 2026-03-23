@@ -47,7 +47,7 @@ def rpc_call(method, params=None):
         print("Check: Is Bitcoin Core running? Is the IP correct?")
         sys.exit(1)
     except requests.exceptions.Timeout:
-        print(f"[TIMEOUT] {RPC_URL} antwortet nicht.")
+        print(f"[TIMEOUT] {RPC_URL} did not respond.")
         sys.exit(1)
     except Exception as e:
         print(f"[ERROR] {method}: {e}")
