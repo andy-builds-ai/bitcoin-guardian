@@ -1,6 +1,6 @@
 """
 Bitcoin Guardian v1 - Health Check
-Überwacht deine Bitcoin Full Node via RPC-API.
+Monitors your Bitcoin full node via RPC API.
 """
 
 import requests
@@ -77,8 +77,7 @@ def get_network_info():
         "version": data["subversion"],
         "connections_in": data.get("connections_in", 0),
         "connections_out": data.get("connections_out", 0),
-        "connections_total": data["connections"],
-        "relay_fee": data["relayfee"]
+        "connections_total": data["connections"]
     }
 
 
@@ -117,7 +116,7 @@ def assess_risk(blockchain, network, mempool):
         risk_level = "CRITICAL"
     elif network["connections_total"] < 8:
         risks.append(f"Few Peers ({network['connections_total']})")
-        if risk_level != "CRITICAL":
+        if risk_level == "LOW":
             risk_level = "WARN"
 
     if network["connections_in"] == 0:

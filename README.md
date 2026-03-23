@@ -1,88 +1,87 @@
-# ₿ Bitcoin Guardian
+# Bitcoin Guardian 🛡️
 
-Health check monitor for your Bitcoin full node via RPC API.
+> A real-time monitoring agent for Bitcoin full node infrastructure — built by a construction worker learning Python.
 
-## Features
+## What This Is
 
-- Blockchain status: block height, sync progress, disk usage
-- Network: peer connections (in/out), node version
-- Mempool: transactions, size, RAM usage
-- Node uptime
-- Risk assessment (LOW / WARN / CRITICAL)
+Bitcoin Guardian watches over a live Bitcoin full node running on a Raspberry Pi 5 via Umbrel, plus a Nerdaxe Gamma solo miner. It connects directly to the Bitcoin Core RPC interface and checks what matters: is the node synced, are peers connected, is the mempool healthy, is the miner hashing?
+
+This is not a toy project. This monitors real infrastructure on a real network.
+
+## The Story Behind This
+
+I'm Andreas — 43, professional road construction worker (asphalt, heavy machinery), now teaching myself Python and building toward a career in AI engineering.
+
+Bitcoin Guardian started as my first real Python project. I wanted something that wasn't a tutorial exercise — something that actually runs, talks to real hardware, and does something useful. My Bitcoin node is always on. The question is whether it's healthy. Now I know.
+
+This project is **Module 2 of Jarvis** — my long-term vision for a modular, local-first AI system that runs on edge hardware and stays under human control.
+
+## What It Monitors
+
+| Check | Source | Description |
+|-------|--------|-------------|
+| Block height | Bitcoin Core RPC | Current blockchain tip |
+| Sync status | Bitcoin Core RPC | Is the node fully synced? |
+| Peer connections | Bitcoin Core RPC | Active inbound + outbound peers |
+| Mempool | Bitcoin Core RPC | Transaction count and size |
+| Chain | Bitcoin Core RPC | Mainnet verification |
+| Miner status | AxeOS API | Nerdaxe Gamma hashrate and uptime |
+
+## Stack
+
+- **Language**: Python 3
+- **Node interface**: Bitcoin Core JSON-RPC (`python-bitcoinrpc`)
+- **Miner interface**: Nerdaxe AxeOS REST API
+- **Hardware**: Raspberry Pi 5 running Umbrel, Nerdaxe Gamma (BM1370, ~1.2 TH/s)
+- **Network**: Local only — no external exposure
 
 ## Setup
-
-### Requirements
-
-- Python 3.10+
-- Bitcoin full node with RPC enabled (e.g. Umbrel)
-- Network access to your node
-
-### Installation
 ```bash
 git clone https://github.com/andy-builds-ai/bitcoin-guardian.git
 cd bitcoin-guardian
-pip install requests python-dotenv
+pip install -r requirements.txt
 ```
 
-### Configuration
-```bash
-cp .env.example .env
+Configure your node credentials in `.env`:
+```env
+RPC_HOST=192.168.x.x
+RPC_PORT=8332
+RPC_USER=your_rpc_user
+RPC_PASSWORD=your_rpc_password
+MINER_HOST=192.168.x.x
 ```
 
-Edit `.env` with your RPC credentials:
-```
-BTC_RPC_HOST=192.168.2.102
-BTC_RPC_PORT=8332
-BTC_RPC_USER=your_user
-BTC_RPC_PASS=your_password
-```
-
-### Run
+Run:
 ```bash
 python bitcoin_guardian.py
 ```
 
-## Example Output
-```
-============================================================
-  ₿ BITCOIN GUARDIAN - Health Check Report
-  2026-02-26 13:58:00 UTC
-============================================================
-
-📊 BLOCKCHAIN
-   Block Height:   938,435
-   Sync:           100.0%
-   Disk:           767.0 GB
-
-🌐 NETWORK
-   Peers Total:    37
-
-📦 MEMPOOL
-   Transactions:   18,182
-
-⏱️  UPTIME:         1.0 hours
-
-============================================================
-   ✅ RISK: LOW - All good
-============================================================
-```
-
 ## Roadmap
 
-- [ ] Log to file instead of terminal only
-- [ ] Scheduled checks (cron / Task Scheduler)
-- [ ] Alerts on WARN/CRITICAL
-- [ ] Web dashboard
+- [x] RPC connection and health checks
+- [x] Miner monitoring via AxeOS
+- [ ] Scheduled monitoring loop
+- [ ] Telegram / email alerts
+- [ ] n8n webhook integration
+- [ ] Agent mode: autonomous 24/7 monitoring
 
-## Tech Stack
+## Open Issues
 
-- Python 3 + requests + python-dotenv
-- Bitcoin Core RPC API
-- Tested with Umbrel on Raspberry Pi 5
+- [#1 relay_fee unused variable](https://github.com/andy-builds-ai/bitcoin-guardian/issues/1)
+- [#2 inconsistent guard logic](https://github.com/andy-builds-ai/bitcoin-guardian/issues/2)
+- [#3 connections_in default value](https://github.com/andy-builds-ai/bitcoin-guardian/issues/3)
+
+## Part of Jarvis
+
+Bitcoin Guardian is Module 2 in **Jarvis** — a modular, local AI platform built on edge hardware.
+
+> *"Not selling the dog — selling the intelligent system for the dog."*
 
 ## Author
 
-**Andreas** - [andy-builds-ai](https://github.com/andy-builds-ai)
+**Andreas** — Road worker. Bitcoin node operator. Python beginner. AI engineering student.
+📍 Garbsen, Germany
+🔗 [GitHub: andy-builds-ai](https://github.com/andy-builds-ai)
 
-Aspiring AI Engineer | Bitcoin Node Operator
+---
+*Built on a Raspberry Pi 5. Watched over by a guy who used to drive asphalt rollers for a living.*
