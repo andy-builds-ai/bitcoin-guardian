@@ -4,7 +4,6 @@ Monitors your Bitcoin full node via RPC API.
 """
 
 import requests
-import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -44,8 +43,8 @@ def rpc_call(method, params=None):
             return None
         return result["result"]
     except requests.exceptions.ConnectionError:
-        print(f"[CONNECTION ERROR] Kann {RPC_URL} nicht erreichen.")
-        print("Prüfe: Läuft Bitcoin Core? Ist die IP korrekt?")
+        print(f"[CONNECTION ERROR] Cannot reach {RPC_URL}.")
+        print("Check: Is Bitcoin Core running? Is the IP correct?")
         sys.exit(1)
     except requests.exceptions.Timeout:
         print(f"[TIMEOUT] {RPC_URL} antwortet nicht.")

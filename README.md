@@ -46,7 +46,6 @@ This project is **Module 2 of Jarvis** — my long-term vision for a modular, lo
 ---
 
 ## Setup
-
 ```bash
 git clone https://github.com/andy-builds-ai/bitcoin-guardian.git
 cd bitcoin-guardian
@@ -54,13 +53,11 @@ pip install requests python-dotenv
 ```
 
 Create your `.env` file:
-
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your node credentials:
-
+Edit `.env` with your RPC credentials:
 ```env
 BTC_RPC_HOST=192.168.x.x
 BTC_RPC_PORT=8332
@@ -69,45 +66,8 @@ BTC_RPC_PASS=your_rpc_password
 ```
 
 Run:
-
 ```bash
 python bitcoin_guardian.py
-```
-
----
-
-## Output Example
-
-```
-============================================================
-  ₿ BITCOIN GUARDIAN - Health Check Report
-  2026-03-24 21:00:00 UTC
-============================================================
-
-📊 BLOCKCHAIN
-   Chain:          mainnet
-   Block Height:   893,412
-   Headers:        893,412
-   Sync:           100.0%
-   Disk:           643.2 GB
-   Pruned:         No
-
-🌐 NETWORK
-   Version:        /Satoshi:27.0.0/
-   Peers Total:    12
-   Peers In:       3
-   Peers Out:      9
-
-📦 MEMPOOL
-   Transactions:  4,821
-   Size:          2.1 MB
-   RAM-Usage:     18.3 MB
-
-⏱️  UPTIME:         3.2 days
-
-============================================================
-   ✅ RISK: LOW - All good
-============================================================
 ```
 
 ---
@@ -117,7 +77,7 @@ python bitcoin_guardian.py
 | Level | Condition |
 |-------|-----------|
 | 🚨 CRITICAL | Node not synced, or fewer than 3 peers |
-| ⚠️ WARN | Few peers, no inbound connections, mempool too large, or disk > 600 GB |
+| ⚠️ WARN | Few peers, no inbound connections, mempool > 300 MB, or disk > 600 GB |
 | ✅ LOW | Everything looks good |
 
 ---
@@ -128,9 +88,9 @@ python bitcoin_guardian.py
 - [x] Risk assessment (LOW / WARN / CRITICAL)
 - [x] Node uptime display
 - [ ] Miner monitoring (Nerdaxe Gamma via AxeOS API)
-- [ ] Scheduled monitoring loop (runs every N minutes)
-- [ ] Telegram / email alerts when something is wrong
-- [ ] n8n webhook integration (Jarvis pipeline)
+- [ ] Scheduled monitoring loop
+- [ ] Telegram / email alerts
+- [ ] n8n webhook integration
 - [ ] Agent mode: autonomous 24/7 monitoring
 
 ---
