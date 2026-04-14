@@ -74,8 +74,8 @@ def get_network_info():
         return None
     return {
         "version": data["subversion"],
-        "connections_in": data.get("connections_in", 0),
-        "connections_out": data.get("connections_out", 0),
+        "connections_in": data.get("connections_in"),
+        "connections_out": data.get("connections_out"),
         "connections_total": data["connections"]
     }
 
@@ -118,8 +118,8 @@ def assess_risk(blockchain, network, mempool):
         if risk_level == "LOW":
             risk_level = "WARN"
 
-    if network["connections_in"] == 0:
-        risks.append("No incoming connections (port 8333 open)")
+    if network["connections_in"] is not None and network["connections_in"] == 0:
+        risks.append("No incoming connections (check port 8333)")
         if risk_level == "LOW":
             risk_level = "WARN"
 
@@ -155,8 +155,8 @@ def print_report(blockchain, network, mempool, uptime, risk_level, risks):
     print(f"\n🌐 NETWORK")
     print(f"   Version:        {network['version']}")
     print(f"   Peers Total:    {network['connections_total']}")
-    print(f"   Peers In:       {network['connections_in']}")
-    print(f"   Peers Out:      {network['connections_out']}")
+    print(f"   Peers In:       {network['connections_in'] if network['connections_in'] is not None else 'N/A'}")
+    print(f"   Peers Out:      {network['connections_out'] if network['connections_out'] is not None else 'N/A'}")
 
     print(f"\n📦 MEMPOOL")
     print(f"   Transactions:  {mempool['tx_count']:,}")
