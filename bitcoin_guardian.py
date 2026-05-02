@@ -199,7 +199,7 @@ NODE STATUS:
 - Block height: {blockchain['blocks']}
 - Headers: {blockchain['headers']}
 - Sync progress: {blockchain['sync_progress']}%
-- Connections: (total): {network['connections_total']}
+- Connections (total): {network['connections_total']}
 - Mempool transactions: {mempool['tx_count']}
 - Uptime: {uptime_display}
 - Risk level (rule-based): {risk_level}
@@ -236,6 +236,9 @@ def save_report(llm_text, hallucinated, risk_level):
 
 
 def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks):
+    from llm_providers import call_llm
+    from validators import validate_response
+    
     print("\n🤖 Agent mode active - generating LLM analysis...")
           
     prompt = build_prompt(blockchain, network, mempool, uptime, risk_level, risks)
@@ -293,5 +296,5 @@ def main():
         run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks)
 
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
