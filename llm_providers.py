@@ -1,14 +1,16 @@
 import os
 import requests
-from anthropic import Anthropic, APIError
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 
 def call_anthropic(prompt):
+    from anthropic import Anthropic, APIError
+
+    client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    
     try:
         message = client.messages.create(
             model="claude-haiku-4-5-20251001",
