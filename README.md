@@ -1,64 +1,67 @@
-# Bitcoin Guardian 🛡️
+# Bitcoin Guardian
 
-> A real-time health check monitor for Bitcoin full node infrastructure — built by a construction worker learning Python.
+Health-check monitor for a Bitcoin full node, with an optional LLM agent that explains the state in plain English.
 
----
-
-## What This Is
-
-Bitcoin Guardian connects directly to a live Bitcoin full node via the Bitcoin Core RPC interface and checks what matters: is the node synced, are peers connected, is the mempool healthy?
-
-This is not a toy project. This monitors real infrastructure on a real network — a Raspberry Pi 5 running Umbrel in a home lab.
+Built on a Raspberry Pi 5 running Umbrel, in a home lab.
 
 ---
 
-## The Story Behind This
+## What It Does
 
-I'm Andreas — 43, professional road construction worker (asphalt, heavy machinery), now teaching myself Python and building toward a career in AI engineering.
+Bitcoin Guardian connects to a live Bitcoin full node via the Bitcoin Core RPC interface and reports the things that matter: is the node synced, are peers connected, is the mempool healthy, how much disk is in use.
 
-Bitcoin Guardian started as my first real Python project. I wanted something that wasn't a tutorial exercise — something that actually runs, talks to real hardware, and does something useful. My Bitcoin node is always on. The question is whether it's healthy. Now I know.
+Two modes:
 
-This project is **Module 2 of my home AI system** — my long-term vision for a modular, local-first AI system that runs on edge hardware and stays under human control.
+- **Rule-based** (default) — fast check, plain output, runs anywhere Python runs
+- **Agent mode** (`--agent`) — same data, plus an LLM that reasons about it and writes a Markdown report
+
+The agent does not take action. It observes, reasons, reports. No automation, no auto-fixing, no surprises.
 
 ---
 
 ## What It Monitors
 
-| Check | Source | Description |
-|-------|--------|-------------|
-| Block height | Bitcoin Core RPC | Current blockchain tip |
-| Sync status | Bitcoin Core RPC | Is the node fully synced? |
-| Peer connections | Bitcoin Core RPC | Total, inbound and outbound peers |
-| Mempool | Bitcoin Core RPC | Transaction count and size |
-| Disk usage | Bitcoin Core RPC | Blockchain size on disk |
-| Node uptime | Bitcoin Core RPC | How long the node has been running |
-| Risk assessment | Local logic | LOW / WARN / CRITICAL with reasons |
+| Check             | Source                | Description                                    |
+|-------------------|-----------------------|------------------------------------------------|
+| Block height      | Bitcoin Core RPC      | Current blockchain tip                         |
+| Sync status       | Bitcoin Core RPC      | Is the node fully synced?                      |
+| Peer connections  | Bitcoin Core RPC      | Total, inbound and outbound peers              |
+| Mempool           | Bitcoin Core RPC      | Transaction count and size                     |
+| Disk usage        | Bitcoin Core RPC      | Blockchain size on disk                        |
+| Node uptime       | Bitcoin Core RPC      | How long the node has been running             |
+| Risk level        | Local logic           | LOW / WARN / CRITICAL with reasons             |
 
 ---
 
-## Stack
+## Risk Assessment
 
-- **Language**: Python 3
-- **Node interface**: Bitcoin Core JSON-RPC (via `requests`)
-- **Hardware**: Raspberry Pi 5 running Umbrel
-- **Network**: Local only — no external exposure
+| Level         | Condition                                                                |
+|---------------|--------------------------------------------------------------------------|
+| 🚨 CRITICAL   | Node not synced, or fewer than 3 peers                                   |
+| ⚠️ WARN       | Few peers, no inbound connections, mempool > 300 MB, or disk > 600 GB    |
+| ✅ LOW        | Everything looks good                                                    |
 
 ---
 
-## Setup
+## Quick Start (rule-based mode)
+
+Clone the repo and install the basics:
+
 ```bash
 git clone https://github.com/andy-builds-ai/bitcoin-guardian.git
 cd bitcoin-guardian
-pip install requests python-dotenv
+pip install -r requirements.txt
 ```
 
-Create your `.env` file:
+Create your `.env` file from the template:
+
 ```bash
 cp .env.example .env
 ```
 
 Edit `.env` with your RPC credentials:
-```env
+
+```
 BTC_RPC_HOST=192.168.x.x
 BTC_RPC_PORT=8332
 BTC_RPC_USER=your_rpc_user
@@ -66,54 +69,81 @@ BTC_RPC_PASS=your_rpc_password
 ```
 
 Run:
+
 ```bash
 python bitcoin_guardian.py
 ```
 
----
-
-## Risk Assessment
-
-| Level | Condition |
-|-------|-----------|
-| 🚨 CRITICAL | Node not synced, or fewer than 3 peers |
-| ⚠️ WARN | Few peers, no inbound connections, mempool > 300 MB, or disk > 600 GB |
-| ✅ LOW | Everything looks good |
+You get a console report with risk level and reasons.
 
 ---
 
-## Roadmap
+## Agent Mode (optional)
 
-- [x] RPC connection and health checks
-- [x] Risk assessment (LOW / WARN / CRITICAL)
-- [x] Node uptime display
-- [ ] Miner monitoring (Nerdaxe Gamma via AxeOS API)
-- [ ] Scheduled monitoring loop
-- [ ] Telegram / email alerts
-- [ ] n8n webhook integration
-- [ ] Agent mode: autonomous 24/7 monitoring
+Agent mode adds an LLM on top. The agent reads the same RPC data, writes a Markdown report in `reports/`, and runs a hallucination check that flags any number in the response that doesn't appear in the source data.
+
+Install the agent extras:
+
+```bash
+pip install -r requirements-agent.txt
+```
+
+Add your Anthropic API key to `.env`:
+
+```
+ANTHROPIC_API_KEY=sk-ant-api03-yourKeyHere
+```
+
+Run:
+
+```bash
+python bitcoin_guardian.py --agent
+```
+
+A Markdown report lands in `reports/YYYY-MM-DD_HHMM.md`.
+
+### Switching Providers
+
+The agent supports two providers: Anthropic Claude (default) and a local Ollama model. The provider switch lives in `llm_providers.py`. Default is `claude-haiku-4-5`. To use a local model instead, run Ollama with `gemma3:4b` (or any compatible model) and set the provider to `"ollama"` in `run_agent_mode()`.
 
 ---
 
-## Open Issues
+## Architecture
 
-- [#3 connections_in default value](https://github.com/andy-builds-ai/bitcoin-guardian/issues/3)
+```
+bitcoin_guardian.py    # Main script. Both modes live here.
+llm_providers.py       # Provider abstraction (Anthropic, Ollama).
+validators.py          # Hallucination check via number extraction with tolerance.
+reports/               # Markdown reports (gitignored).
+```
+
+The pattern is `call_llm(provider, prompt)` — provider-agnostic, easy to swap. Same shape will be reused for future modules.
 
 ---
 
-## Part of my home AI system
+## Stack
 
-Bitcoin Guardian is Module 2 in **my home AI system** — a modular, local AI platform built on edge hardware.
-
-> *"Not selling the dog — selling the intelligent system for the dog."*
+- **Language:** Python 3
+- **Node interface:** Bitcoin Core JSON-RPC (via `requests`)
+- **LLM:** Anthropic Claude API (default), Ollama (optional, local)
+- **Hardware:** Raspberry Pi 5 running Umbrel
+- **Network:** Local only — no external exposure
 
 ---
 
-## Author
+## Why This Exists
 
-**Andreas** — Road worker. Bitcoin node operator. Python beginner. AI engineering student.
-📍 Garbsen, Germany
-🔗 [GitHub: andy-builds-ai](https://github.com/andy-builds-ai)
+I'm Andreas — 43, ten years on road construction sites driving asphalt rollers, ten years in warehouse logistics, now teaching myself Python and building toward a career in AI engineering.
+
+Bitcoin Guardian was my first real Python project: not a tutorial exercise, something that runs against real hardware and does something useful. The agent mode is my first real LLM agent — also against real data, with real failure modes I had to debug. Both modes monitor the same node every day.
+
+If it helps anyone else running a node, good. The repo is here to be read.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ---
 

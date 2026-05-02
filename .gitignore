@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Operative Daten und Lern-Skripte
+reports/
+bitcoin_status.py
+hello_claude.py

@@ -8,6 +8,12 @@ import os
 import sys
 from datetime import datetime, timezone
 
+import argparse
+from pathlib import Path
+
+from llm_providers import call_llm
+from validators import validate_response
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -118,7 +124,7 @@ def assess_risk(blockchain, network, mempool):
         if risk_level == "LOW":
             risk_level = "WARN"
 
-    if network["connections_in"] is not None and network["connections_in"] == 0:
+    if network["connections_in"] == 0:
         risks.append("No incoming connections (check port 8333)")
         if risk_level == "LOW":
             risk_level = "WARN"
@@ -183,7 +189,86 @@ def print_report(blockchain, network, mempool, uptime, risk_level, risks):
     print("=" * 60)
 
 
+def build_prompt(blockchain, network, mempool, uptime, risk_level, risks):
+    risks_text = "\n".join(f"- {r}" for r in risks) if risks else "- none"
+    uptime_display = uptime if uptime else "unknown"
+
+    return f"""You are a Bitcoin node monitoring assistant. Analyze the following node status and provide a brief health assessment in 3-4 sentences.
+
+NODE STATUS:
+- Block height: {blockchain['blocks']}
+- Headers: {blockchain['headers']}
+- Sync progress: {blockchain['sync_progress']}%
+- Connections: (total): {network['connections_total']}
+- Mempool transactions: {mempool['tx_count']}
+- Uptime: {uptime_display}
+- Risk level (rule-based): {risk_level}
+
+DETECTED ISSUES:
+{risks_text}
+
+Give a calm, factual assessment. Do not invent numbers. Reference only the values above."""
+
+
+def save_report(llm_text, hallucinated, risk_level):
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M")
+    reports_dir = Path("reports")
+    reports_dir.mkdir(exist_ok=True)
+    filepath = reports_dir / f"{timestamp}.md"
+
+    hallucination_text = "clean" if not hallucinated else f"flagged: {hallucinated}"
+
+    content = f"""# Bitcoin Guardian Agent Report
+
+**Timestamp:** {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}
+**Risk level (rule-based):** {risk_level}
+**Hallucination check:** {hallucination_text}
+
+---
+
+## LLM Analysis
+
+{llm_text}
+"""
+
+    filepath.write_text(content, encoding="utf-8")
+    print(f"\n📄 Report saved: {filepath}")
+
+
+def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks):
+    print("\n🤖 Agent mode active - generating LLM analysis...")
+          
+    prompt = build_prompt(blockchain, network, mempool, uptime, risk_level, risks)
+    llm_text = call_llm(prompt)
+
+    uptime_value = float(uptime.split()[0]) if uptime else 0
+
+    real_data = {
+        "blocks": blockchain["blocks"],
+        "headers": blockchain["headers"],
+        "connections": network["connections_total"],
+        "mempool_tx": mempool["tx_count"],
+        "sync_progress": blockchain["sync_progress"],
+        "disk_gb": blockchain["size_on_disk_gb"],
+        "uptime_value": uptime_value,
+    }
+    
+    hallucinated = validate_response(real_data, llm_text)
+
+    save_report(llm_text, hallucinated, risk_level)
+
+    print(llm_text)
+    if hallucinated:
+        print(f"\n⚠️ Hallucination check: numbers not in source data: {hallucinated}")
+    else:
+        print("\n✅ Hallucination check: clean")
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--agent", action="store_true", help="Run with LLM analysis")
+    args = parser.parse_args()
+
     if not RPC_USER or not RPC_PASS:
         print("[ERROR] BTC_RPC_USER or BTC_RPC_PASS not set.")
         print("Create a .env file or set the environment variable.")
@@ -204,6 +289,9 @@ def main():
     risk_level, risks = assess_risk(blockchain, network, mempool)
     print_report(blockchain, network, mempool, uptime, risk_level, risks)
 
+    if args.agent:
+        run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks)
 
-if __name__ == "__main__":
-    main()
+
+    if __name__ == "__main__":
+        main()
