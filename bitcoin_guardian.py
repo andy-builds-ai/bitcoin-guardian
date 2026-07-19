@@ -234,7 +234,7 @@ def save_report(llm_text, hallucinated, risk_level):
 
 def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks, provider="anthropic"):
     from llm_providers import call_llm
-    from validators import validate_response
+    from validators import validate_response, extract_numbers
 
     print(f"\n🤖 Agent mode active ({provider}) - generating LLM analysis...")
 
@@ -252,8 +252,8 @@ def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks, prov
         "disk_gb": blockchain["size_on_disk_gb"],
         "uptime_value": uptime_value,
     }
-    
-    hallucinated = validate_response(real_data, llm_text)
+
+    hallucinated = validate_response(real_data, llm_text, prompt_numbers=extract_numbers(prompt))
 
     save_report(llm_text, hallucinated, risk_level)
 
