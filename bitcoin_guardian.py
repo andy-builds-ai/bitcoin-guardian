@@ -13,7 +13,7 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(Path(__file__).parent / ".env")
 except ImportError:
     pass
 
@@ -211,7 +211,7 @@ Give a calm, factual assessment. Do not invent numbers. Reference only the value
 
 def save_report(llm_text, hallucinated, risk_level):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M")
-    reports_dir = Path("reports")
+    reports_dir = Path(__file__).parent / "reports"
     reports_dir.mkdir(exist_ok=True)
     filepath = reports_dir / f"{timestamp}.md"
 
