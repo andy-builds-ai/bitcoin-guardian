@@ -9,8 +9,12 @@ load_dotenv()
 def call_anthropic(prompt):
     from anthropic import Anthropic, APIError
 
-    client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        return "[ERROR] ANTHROPIC_API_KEY not set — see README, agent mode."
+
+    client = Anthropic(api_key=api_key)
+
     try:
         message = client.messages.create(
             model="claude-haiku-4-5-20251001",
