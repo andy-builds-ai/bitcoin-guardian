@@ -121,7 +121,9 @@ def assess_risk(blockchain, network, mempool):
         if risk_level == "LOW":
             risk_level = "WARN"
 
-    if network["connections_in"] == 0:
+    if network["connections_in"] is None:
+        risks.append("Inbound unknown (Core < 0.21)")
+    elif network["connections_in"] == 0:
         risks.append("No incoming connections (check port 8333)")
         if risk_level == "LOW":
             risk_level = "WARN"
