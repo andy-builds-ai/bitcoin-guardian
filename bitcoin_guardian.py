@@ -232,14 +232,14 @@ def save_report(llm_text, hallucinated, risk_level):
     print(f"\n📄 Report saved: {filepath}")
 
 
-def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks):
+def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks, provider="anthropic"):
     from llm_providers import call_llm
     from validators import validate_response
-    
-    print("\n🤖 Agent mode active - generating LLM analysis...")
-          
+
+    print(f"\n🤖 Agent mode active ({provider}) - generating LLM analysis...")
+
     prompt = build_prompt(blockchain, network, mempool, uptime, risk_level, risks)
-    llm_text = call_llm(prompt)
+    llm_text = call_llm(prompt, provider=provider)
 
     uptime_value = float(uptime.split()[0]) if uptime else 0
 
@@ -267,6 +267,12 @@ def run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--agent", action="store_true", help="Run with LLM analysis")
+    parser.add_argument(
+        "--provider",
+        choices=["anthropic", "ollama"],
+        default="anthropic",
+        help="LLM provider for agent mode (default: anthropic)"
+    )
     args = parser.parse_args()
 
     if not RPC_USER or not RPC_PASS:
@@ -290,7 +296,7 @@ def main():
     print_report(blockchain, network, mempool, uptime, risk_level, risks)
 
     if args.agent:
-        run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks)
+        run_agent_mode(blockchain, network, mempool, uptime, risk_level, risks, provider=args.provider)
 
 
 if __name__ == "__main__":
