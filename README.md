@@ -104,7 +104,14 @@ A Markdown report lands in `reports/YYYY-MM-DD_HHMM.md`.
 
 ### Switching Providers
 
-The agent supports two providers: Anthropic Claude (default) and a local Ollama model. The provider switch lives in `llm_providers.py`. Default is `claude-haiku-4-5`. To use a local model instead, run Ollama with `gemma3:4b` (or any compatible model) and set the provider to `"ollama"` in `run_agent_mode()`.
+The agent supports two providers: Anthropic Claude (default) and a local Ollama model. Pick one with the `--provider` flag:
+
+```bash
+python bitcoin_guardian.py --agent                     # Anthropic Claude (default)
+python bitcoin_guardian.py --agent --provider ollama   # local Ollama model
+```
+
+Default model is `claude-haiku-4-5`. For the local path, run Ollama with `gemma3:4b` (or any compatible model) — no code edit needed.
 
 ---
 
@@ -117,7 +124,7 @@ validators.py          # Hallucination check via number extraction with toleranc
 reports/               # Markdown reports (gitignored).
 ```
 
-The pattern is `call_llm(provider, prompt)` — provider-agnostic, easy to swap. Same shape will be reused for future modules.
+The pattern is `call_llm(prompt, provider=...)` — provider-agnostic, easy to swap. Same shape will be reused for future modules.
 
 ---
 
