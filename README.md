@@ -104,6 +104,8 @@ python bitcoin_guardian.py --agent
 
 A Markdown report lands in `reports/YYYY-MM-DD_HHMM.md`.
 
+![Agent-mode run with hallucination check](docs/agent-report.png)
+
 ### Switching Providers
 
 The agent supports two providers: Anthropic Claude (default) and a local Ollama model. Pick one with the `--provider` flag:
@@ -113,7 +115,7 @@ python bitcoin_guardian.py --agent                     # Anthropic Claude (defau
 python bitcoin_guardian.py --agent --provider ollama   # local Ollama model
 ```
 
-Default model is `claude-haiku-4-5`. For the local path, run Ollama with `gemma3:4b` (or any compatible model) — no code edit needed.
+Default model is `claude-haiku-4-5-20251001`. For the local path, run Ollama with `gemma3:4b` (or any compatible model) — no code edit needed.
 
 ---
 
