@@ -2,6 +2,8 @@
 
 Health-check monitor for a Bitcoin full node, with an optional LLM agent that explains the state in plain English.
 
+![Bitcoin Guardian health-check report](docs/health-check-report.png)
+
 Built on a Raspberry Pi 5 running Umbrel, in a home lab.
 
 ---
